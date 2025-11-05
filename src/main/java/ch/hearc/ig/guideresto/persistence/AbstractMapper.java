@@ -16,6 +16,8 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
 
     protected static final Logger logger = LogManager.getLogger();
 
+    protected Map<Integer, T> cache = new HashMap<>();
+
     public abstract T findById(int id);
     public abstract Set<T> findAll();
     public abstract T create(T object);
@@ -93,8 +95,7 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
      * @return true si le cache ne contient aucun objet, false sinon
      */
     protected boolean isCacheEmpty() {
-        // TODO à implémenter par vos soins
-        throw new UnsupportedOperationException("Vous devez implémenter votre cache vous-même !");
+        return cache == null || cache.isEmpty();
     }
 
     /**
@@ -102,7 +103,12 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
      */
     protected void resetCache() {
         // TODO à implémenter par vos soins
-        throw new UnsupportedOperationException("Vous devez implémenter votre cache vous-même !");
+        if (cache != null) {
+            cache.clear();
+            logger.debug("Cache vidé.");
+        } else {
+            logger.debug("Aucun cache à vider (cache null).");
+        }
     }
 
     /**
@@ -111,7 +117,14 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
      */
     protected void addToCache(T objet) {
         // TODO à implémenter par vos soins
-        throw new UnsupportedOperationException("Vous devez implémenter votre cache vous-même !");
+        Integer pk = objet.getId();
+        if (cache == null) {
+            cache = new HashMap<>();
+        }
+        if (!cache.containsKey(pk)) {
+            cache.put(pk, objet);
+            //logger.info("Objet ajouté au cache avec l'ID : {}", objet.getId());
+        }
     }
 
     /**
@@ -120,6 +133,12 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
      */
     protected void removeFromCache(Integer id) {
         // TODO à implémenter par vos soins
-        throw new UnsupportedOperationException("Vous devez implémenter votre cache vous-même !");
+        if (cache.containsKey(id)) {
+            cache.remove(id);
+            logger.debug("Objet avec ID {} retiré du cache.", id);
+        } else {
+            logger.debug("Aucun objet avec l'ID {} trouvé dans le cache.", id);
+        }
+
     }
 }
