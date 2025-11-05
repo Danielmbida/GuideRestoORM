@@ -1,5 +1,6 @@
 package ch.hearc.ig.guideresto.service;
 
+import ch.hearc.ig.guideresto.persistence.ConnectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,23 +14,7 @@ public class AbstractService {
     protected Connection connection;
     public AbstractService() {
         try{
-            // Chargement du fichier de configuration depuis le classpath
-            Properties props = new Properties();
-            InputStream input = getClass().getClassLoader().getResourceAsStream("database.properties");
-
-            if (input == null) {
-                throw new RuntimeException("Fichier database.properties introuvable dans le classpath !");
-            }
-
-            props.load(input);
-
-            // Ouverture de la connexion JDBC
-            this.connection = DriverManager.getConnection(
-                    props.getProperty("database.url"),
-                    props.getProperty("database.username"),
-                    props.getProperty("database.password")
-            );
-            this.connection.setAutoCommit(false);
+            this.connection = ConnectionUtils.getConnection();
 
         }catch(Exception e){
             logger.error("Erreur lors de la connection à la bd : " + e.getMessage());
