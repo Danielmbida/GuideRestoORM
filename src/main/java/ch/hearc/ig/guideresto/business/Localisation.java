@@ -11,7 +11,7 @@ public class Localisation {
     @Column(name = "adresse")
     private String street;
     @ManyToOne
-    @JoinColumn(name = "fk_ville")
+    @JoinColumn(name = "fk_vill")
     private City city;
 
     public Localisation() {

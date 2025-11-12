@@ -29,35 +29,35 @@ public class Application {
         EntityTransaction transaction = re.getTransaction();
         transaction.begin();
 
-        City res = re.find(City.class, 1);
+        Restaurant res = re.find(Restaurant.class, 1);
 
 //        re.persist(res);
 //        re.flush();
-        System.out.println(res.getCityName());
+        System.out.println(res.getType().getLabel());
         transaction.commit();
         re.close();
 
-        scanner = new Scanner(System.in);
-        restaurantService = RestaurantService.getInstance();
-        evaluationService = EvaluationService.getInstance();
-
-        // --- Shutdown hook pour fermer proprement les connexions JDBC via les services ---
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                if (restaurantService != null) restaurantService.close();
-                if (evaluationService != null) evaluationService.close();
-            } catch (Exception e) {
-                logger.warn("Erreur à la fermeture des services: " + e.getMessage());
-            }
-        }));
-
-        System.out.println("Bienvenue dans GuideResto ! Que souhaitez-vous faire ?");
-        int choice;
-        do {
-            printMainMenu();
-            choice = readInt();
-            proceedMainMenu(choice);
-        } while (choice != 0);
+//        scanner = new Scanner(System.in);
+//        restaurantService = RestaurantService.getInstance();
+//        evaluationService = EvaluationService.getInstance();
+//
+//        // --- Shutdown hook pour fermer proprement les connexions JDBC via les services ---
+//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            try {
+//                if (restaurantService != null) restaurantService.close();
+//                if (evaluationService != null) evaluationService.close();
+//            } catch (Exception e) {
+//                logger.warn("Erreur à la fermeture des services: " + e.getMessage());
+//            }
+//        }));
+//
+//        System.out.println("Bienvenue dans GuideResto ! Que souhaitez-vous faire ?");
+//        int choice;
+//        do {
+//            printMainMenu();
+//            choice = readInt();
+//            proceedMainMenu(choice);
+//        } while (choice != 0);
 
     }
 
