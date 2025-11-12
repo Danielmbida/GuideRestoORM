@@ -31,9 +31,11 @@ public class Restaurant implements IBusinessObject {
     private String website;
     @OneToMany(mappedBy = "restaurant")
     private Set<Evaluation> evaluations;
-    @Transient
+    @Embedded
     private Localisation address;
-    @Transient
+    @ManyToOne
+
+    @JoinColumn(name="fk_type")
     private RestaurantType type;
 
     public Restaurant() {

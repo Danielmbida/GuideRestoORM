@@ -22,7 +22,8 @@ public class Grade implements IBusinessObject {
     private Integer grade;
     @Transient
     private CompleteEvaluation evaluation;
-    @Transient
+    @ManyToOne
+    @JoinColumn(name="fk_crit", nullable=false)
     private EvaluationCriteria criteria;
 
     public Grade() {
