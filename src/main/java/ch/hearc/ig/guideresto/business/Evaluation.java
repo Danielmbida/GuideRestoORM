@@ -1,14 +1,29 @@
 package ch.hearc.ig.guideresto.business;
 
+import jakarta.persistence.*;
+
 import java.util.Date;
 
 /**
  * @author cedric.baudet
  */
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Evaluation implements IBusinessObject {
 
+    @Id
+    @GeneratedValue(
+            strategy=GenerationType.SEQUENCE,
+            generator="SEQ_EVAL")
+    @SequenceGenerator(name="SEQ_EVAL",
+            sequenceName="SEQ_EVAL",
+            initialValue=1, allocationSize=1)
+    @Column(name="NUMERO")
     private Integer id;
+    @Temporal(TemporalType.DATE)
+    @Column(name="date_eval", nullable=false)
     private Date visitDate;
+    @Transient
     private Restaurant restaurant;
 
     public Evaluation() {

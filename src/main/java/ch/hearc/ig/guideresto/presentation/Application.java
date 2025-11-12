@@ -28,9 +28,12 @@ public class Application {
         EntityManager re = JpaUtils.getEntityManager();
         EntityTransaction transaction = re.getTransaction();
         transaction.begin();
-        Restaurant res = new Restaurant();
-        re.persist(res);
-        re.flush();
+
+        City res = re.find(City.class, 1);
+
+//        re.persist(res);
+//        re.flush();
+        System.out.println(res.getCityName());
         transaction.commit();
         re.close();
 

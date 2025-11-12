@@ -1,5 +1,6 @@
 package ch.hearc.ig.guideresto.business;
 
+import jakarta.persistence.*;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.HashSet;
@@ -8,14 +9,31 @@ import java.util.Set;
 /**
  * @author cedric.baudet
  */
+@Entity
+@Table(name = "RESTAURANTS")
 public class Restaurant implements IBusinessObject {
 
+    @Id
+    @GeneratedValue(
+            strategy=GenerationType.SEQUENCE,
+            generator="SEQ_RESTAURANTS")
+    @SequenceGenerator(name="SEQ_RESTAURANTS",
+            sequenceName="SEQ_RESTAURANTS",
+            initialValue=1, allocationSize=1)
+    @Column(name= "numero")
     private Integer id;
+    @Column(name = "nom", nullable = false, length = 100)
     private String name;
+    @Lob
+    @Column(name = "description")
     private String description;
+    @Column (name = "site_web",length = 100)
     private String website;
+    @Transient
     private Set<Evaluation> evaluations;
+    @Transient
     private Localisation address;
+    @Transient
     private RestaurantType type;
 
     public Restaurant() {

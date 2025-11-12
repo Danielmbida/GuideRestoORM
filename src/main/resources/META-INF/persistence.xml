@@ -18,11 +18,5 @@
         <class>ch.hearc.ig.guideresto.business.Restaurant</class>
         <class>ch.hearc.ig.guideresto.business.RestaurantType</class>
 
-        <properties>
-            <!-- Specific configuration for Hibernate -->
-            <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect" />
-            <property name="hibernate.show_sql" value="true" />
-        </properties>
-
     </persistence-unit>
 </persistence>
