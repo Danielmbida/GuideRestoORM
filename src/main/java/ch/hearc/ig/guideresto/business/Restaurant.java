@@ -29,7 +29,7 @@ public class Restaurant implements IBusinessObject {
     private String description;
     @Column (name = "site_web",length = 100)
     private String website;
-    @Transient
+    @OneToMany(mappedBy = "restaurant")
     private Set<Evaluation> evaluations;
     @Transient
     private Localisation address;
