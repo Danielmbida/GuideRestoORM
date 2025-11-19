@@ -6,9 +6,8 @@ import jakarta.persistence.*;
  * @author cedric.baudet
  */
 @Entity
-@Table
+@Table(name = "NOTES")
 public class Grade implements IBusinessObject {
-
     @Id
     @GeneratedValue(
             strategy=GenerationType.SEQUENCE,
@@ -20,7 +19,8 @@ public class Grade implements IBusinessObject {
     private Integer id;
     @Column(name="note", nullable=false,precision= 3)
     private Integer grade;
-    @Transient
+    @ManyToOne
+    @JoinColumn(name="fk_comm", nullable=false)
     private CompleteEvaluation evaluation;
     @ManyToOne
     @JoinColumn(name="fk_crit", nullable=false)

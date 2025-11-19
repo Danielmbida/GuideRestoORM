@@ -19,7 +19,7 @@ public class CompleteEvaluation extends Evaluation {
     private String comment;
     @Column(name="nom_utilisateur",nullable = false, length = 100)
     private String username;
-    @Transient
+    @OneToMany(mappedBy = "evaluation")
     private Set<Grade> grades;
 
     public CompleteEvaluation() {
