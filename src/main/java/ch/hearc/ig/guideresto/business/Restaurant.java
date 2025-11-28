@@ -34,12 +34,11 @@ public class Restaurant implements IBusinessObject {
     @Embedded
     private Localisation address;
     @ManyToOne
-
     @JoinColumn(name="fk_type")
     private RestaurantType type;
 
     public Restaurant() {
-        this(null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null);
     }
 
     public Restaurant(Integer id, String name, String description, String website, String street, City city, RestaurantType type) {
