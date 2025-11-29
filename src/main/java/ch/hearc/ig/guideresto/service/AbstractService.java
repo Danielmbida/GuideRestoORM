@@ -1,6 +1,8 @@
 package ch.hearc.ig.guideresto.service;
 
 import ch.hearc.ig.guideresto.persistence.ConnectionUtils;
+import ch.hearc.ig.guideresto.persistence.jpa.JpaUtils;
+import jakarta.persistence.EntityManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,10 +14,11 @@ import java.util.Properties;
 public class AbstractService {
     protected static final Logger logger = LogManager.getLogger();
     protected Connection connection;
+    protected EntityManager entityManager;
     public AbstractService() {
         try{
             this.connection = ConnectionUtils.getConnection();
-
+            entityManager = JpaUtils.getEntityManager();
         }catch(Exception e){
             logger.error("Erreur lors de la connection à la bd : " + e.getMessage());
         }
