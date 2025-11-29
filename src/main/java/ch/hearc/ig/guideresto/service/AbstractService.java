@@ -26,10 +26,20 @@ public class AbstractService {
     }
 
     /**
-     * Ferme proprement la connexion JDBC (rend au pool si pool, sinon fermeture physique).
+     * Ferme proprement la connexion JDBC (rend au pool si pool, sinon fermeture physique)
+     * et l'EntityManager JPA.
      * À appeler depuis la couche de présentation via un shutdown hook.
      */
     public void close() {
+        try {
+            if (this.entityManager != null && this.entityManager.isOpen()) {
+                this.entityManager.close();
+                logger.info("EntityManager fermé proprement.");
+            }
+        } catch (Exception e) {
+            logger.warn("Erreur lors de la fermeture de l'EntityManager: " + e.getMessage());
+        }
+
         try {
             if (this.connection != null && !this.connection.isClosed()) {
                 this.connection.close();

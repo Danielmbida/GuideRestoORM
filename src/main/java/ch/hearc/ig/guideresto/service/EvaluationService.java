@@ -39,7 +39,10 @@ public class EvaluationService extends AbstractService {
     }
 
     public Set<EvaluationCriteria> getAllEvaluationCriterias() {
-        return evaluationCriteriaMapper.findAll();
+        return Set.copyOf(entityManager.createQuery(
+                "SELECT ec FROM EvaluationCriteria ec",
+                EvaluationCriteria.class)
+                .getResultList());
     }
 
     /**
