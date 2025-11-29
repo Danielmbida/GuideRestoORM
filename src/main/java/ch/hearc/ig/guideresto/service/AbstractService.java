@@ -1,33 +1,33 @@
 package ch.hearc.ig.guideresto.service;
 
-import ch.hearc.ig.guideresto.persistence.ConnectionUtils;
 import ch.hearc.ig.guideresto.persistence.jpa.JpaUtils;
 import jakarta.persistence.EntityManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.util.Properties;
-
+/**
+ * Classe de base abstraite pour tous les services métier.
+ * <p>
+ * Fournit un accès à l'EntityManager JPA pour les opérations de persistance.
+ * Les classes filles héritent de cet EntityManager pour interagir avec la base de données.
+ */
 public class AbstractService {
     protected static final Logger logger = LogManager.getLogger();
-    protected Connection connection;
     protected EntityManager entityManager;
+
+    /**
+     * Constructeur : initialise l'EntityManager via JpaUtils.
+     */
     public AbstractService() {
         try{
-            this.connection = ConnectionUtils.getConnection();
             entityManager = JpaUtils.getEntityManager();
         }catch(Exception e){
-            logger.error("Erreur lors de la connection à la bd : " + e.getMessage());
+            logger.error("Erreur lors de la récupération de l'EntityManager : " + e.getMessage());
         }
-
     }
 
     /**
-     * Ferme proprement la connexion JDBC (rend au pool si pool, sinon fermeture physique)
-     * et l'EntityManager JPA.
+     * Ferme proprement l'EntityManager JPA.
      * À appeler depuis la couche de présentation via un shutdown hook.
      */
     public void close() {
@@ -39,14 +39,6 @@ public class AbstractService {
         } catch (Exception e) {
             logger.warn("Erreur lors de la fermeture de l'EntityManager: " + e.getMessage());
         }
-
-        try {
-            if (this.connection != null && !this.connection.isClosed()) {
-                this.connection.close();
-                logger.info("Connexion JDBC fermée proprement.");
-            }
-        } catch (Exception e) {
-            logger.warn("Erreur lors de la fermeture de la connexion JDBC: " + e.getMessage());
-        }
     }
 }
+

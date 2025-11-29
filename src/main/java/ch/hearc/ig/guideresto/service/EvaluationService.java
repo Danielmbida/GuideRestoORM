@@ -1,10 +1,6 @@
 package ch.hearc.ig.guideresto.service;
 
 import ch.hearc.ig.guideresto.business.*;
-import ch.hearc.ig.guideresto.persistence.BasicEvaluationMapper;
-import ch.hearc.ig.guideresto.persistence.CompleteEvaluationMapper;
-import ch.hearc.ig.guideresto.persistence.EvaluationCriteriaMapper;
-import ch.hearc.ig.guideresto.persistence.GradeMapper;
 
 import java.util.Date;
 import java.util.Set;
@@ -12,8 +8,8 @@ import java.util.Set;
 /**
  * Service métier pour la gestion des évaluations (simples et complètes) des restaurants.
  * <p>
- * Singleton qui orchestre les opérations via {@link BasicEvaluationMapper} et {@link CompleteEvaluationMapper}.
- * Hérite d'{@link AbstractService} pour la connexion JDBC.
+ * Singleton qui orchestre les opérations via JPA/Hibernate avec EntityManager.
+ * Hérite d'{@link AbstractService} pour l'EntityManager et la connexion JDBC.
  */
 public class EvaluationService extends AbstractService {
     // Instance unique (pattern Singleton)
@@ -22,7 +18,7 @@ public class EvaluationService extends AbstractService {
 
 
     /**
-     * Constructeur privé : initialisation des mappers avec la connexion héritée.
+     * Constructeur privé : initialisation de l'EntityManager via la classe parente.
      */
     private EvaluationService()
     {
@@ -82,30 +78,38 @@ public class EvaluationService extends AbstractService {
     }
 
     /**
-     * Récupère toutes les évaluations complètes (commentaires + notes) d’un restaurant.
+     * Récupère toutes les évaluations complètes (commentaires + notes) d'un restaurant.
      *
      * @param restaurant Le restaurant cible.
-     * @return Un ensemble d’objets {@link CompleteEvaluation}.
+     * @return Un ensemble d'objets {@link CompleteEvaluation}.
      */
     public Set<CompleteEvaluation> getCompleteEvaluationsOfARestaurant(Restaurant restaurant){
-        return this.completeEvaluationMapper.findByRestaurantId(restaurant.getId());
+        return Set.copyOf(entityManager.createQuery(
+                "SELECT ce FROM CompleteEvaluation ce WHERE ce.restaurant.id = :restaurantId",
+                CompleteEvaluation.class)
+                .setParameter("restaurantId", restaurant.getId())
+                .getResultList());
     }
 
     /**
-     * Récupère toutes les évaluations simples (likes/dislikes) d’un restaurant.
+     * Récupère toutes les évaluations simples (likes/dislikes) d'un restaurant.
      *
      * @param restaurant Le restaurant cible.
-     * @return Un ensemble d’objets {@link BasicEvaluation}.
+     * @return Un ensemble d'objets {@link BasicEvaluation}.
      */
     public Set<BasicEvaluation> getBasicEvaluationsOfARestaurant(Restaurant restaurant){
-        return this.basicEvaluationMapper.findByRestaurantId(restaurant.getId());
+        return Set.copyOf(entityManager.createQuery(
+                "SELECT be FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId",
+                BasicEvaluation.class)
+                .setParameter("restaurantId", restaurant.getId())
+                .getResultList());
     }
 
     /**
      * Ajoute un "like" pour un restaurant donné, depuis une adresse IP donnée.
      *
      * @param restaurant Le restaurant liké.
-     * @param ipAddress  Adresse IP de l’utilisateur (clé métier utilisée côté mapper pour la relecture).
+     * @param ipAddress  Adresse IP de l'utilisateur (clé métier utilisée côté mapper pour la relecture).
      */
     public void likeRestaurant(Restaurant restaurant, String ipAddress){
         BasicEvaluation basicEvaluation = new BasicEvaluation();
@@ -115,14 +119,16 @@ public class EvaluationService extends AbstractService {
         basicEvaluation.setVisitDate(new Date());
         basicEvaluation.setIpAddress(ipAddress);
         // Persistance
-        this.basicEvaluationMapper.create(basicEvaluation);
+        entityManager.getTransaction().begin();
+        entityManager.persist(basicEvaluation);
+        entityManager.getTransaction().commit();
     }
 
     /**
      * Ajoute un "dislike" pour un restaurant donné, depuis une adresse IP donnée.
      *
      * @param restaurant Le restaurant disliké.
-     * @param ipAddress  Adresse IP de l’utilisateur.
+     * @param ipAddress  Adresse IP de l'utilisateur.
      */
     public void dislikeRestaurant(Restaurant restaurant, String ipAddress){
         BasicEvaluation basicEvaluation = new BasicEvaluation();
@@ -132,7 +138,9 @@ public class EvaluationService extends AbstractService {
         basicEvaluation.setVisitDate(new Date());
         basicEvaluation.setIpAddress(ipAddress);
         // Persistance
-        this.basicEvaluationMapper.create(basicEvaluation);
+        entityManager.getTransaction().begin();
+        entityManager.persist(basicEvaluation);
+        entityManager.getTransaction().commit();
     }
 
     /**
@@ -155,10 +163,12 @@ public class EvaluationService extends AbstractService {
         System.out.println(completeEvaluation.getId());
 
         // Persistance
-        this.completeEvaluationMapper.create(completeEvaluation);
+        entityManager.getTransaction().begin();
+        entityManager.persist(completeEvaluation);
         for (Grade grade : completeEvaluation.getGrades()) {
             grade.setEvaluation(completeEvaluation);
-            gradeMapper.create(grade);
+            entityManager.persist(grade);
         }
+        entityManager.getTransaction().commit();
     }
 }
