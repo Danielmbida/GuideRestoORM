@@ -19,11 +19,7 @@ public class EvaluationService extends AbstractService {
     // Instance unique (pattern Singleton)
     private static EvaluationService evaluationService = null;
 
-    // Mappers de persistance
-    private BasicEvaluationMapper basicEvaluationMapper;
-    private CompleteEvaluationMapper completeEvaluationMapper;
-    private EvaluationCriteriaMapper evaluationCriteriaMapper;
-    private GradeMapper gradeMapper;
+
 
     /**
      * Constructeur privé : initialisation des mappers avec la connexion héritée.
@@ -31,11 +27,7 @@ public class EvaluationService extends AbstractService {
     private EvaluationService()
     {
         super();
-        // Initialisation des mappers de persistance
-        this.basicEvaluationMapper = new BasicEvaluationMapper(connection);
-        this.completeEvaluationMapper = new CompleteEvaluationMapper(connection);
-        this.evaluationCriteriaMapper = new EvaluationCriteriaMapper(connection);
-        this.gradeMapper = new GradeMapper(connection);
+
     }
 
     public Set<EvaluationCriteria> getAllEvaluationCriterias() {
@@ -66,20 +58,12 @@ public class EvaluationService extends AbstractService {
      * @return Le nombre total de likes pour ce restaurant.
      */
     public int getRestaurantAmountLikes(Restaurant restaurant) {
-        // Récupère toutes les évaluations simples liées au restaurant
-        Set<BasicEvaluation> evaluations = this.basicEvaluationMapper.findByRestaurantId(restaurant.getId());
-
-        int likeCount = 0;
-
-        // Parcourt toutes les évaluations du restaurant
-        for (BasicEvaluation evaluation : evaluations) {
-            // Incrémente si l'appréciation est positive
-            if (evaluation.getLikeRestaurant()) {
-                likeCount++;
-            }
-        }
-
-        return likeCount;
+        Long count = entityManager.createQuery(
+                "SELECT COUNT(be) FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId AND be.likeRestaurant = true",
+                Long.class)
+                .setParameter("restaurantId", restaurant.getId())
+                .getSingleResult();
+        return count.intValue();
     }
 
     /**
@@ -89,20 +73,12 @@ public class EvaluationService extends AbstractService {
      * @return Le nombre total de dislikes pour ce restaurant.
      */
     public int getRestaurantAmountDislikes(Restaurant restaurant) {
-        // Récupère toutes les évaluations simples liées au restaurant
-        Set<BasicEvaluation> evaluations = this.basicEvaluationMapper.findByRestaurantId(restaurant.getId());
-
-        int dislikeCount = 0;
-
-        // Parcourt toutes les évaluations du restaurant
-        for (BasicEvaluation evaluation : evaluations) {
-            // Incrémente si l'appréciation est négative
-            if (!evaluation.getLikeRestaurant()) {
-                dislikeCount++;
-            }
-        }
-
-        return dislikeCount;
+        Long count = entityManager.createQuery(
+                "SELECT COUNT(be) FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId AND be.likeRestaurant = false",
+                Long.class)
+                .setParameter("restaurantId", restaurant.getId())
+                .getSingleResult();
+        return count.intValue();
     }
 
     /**
