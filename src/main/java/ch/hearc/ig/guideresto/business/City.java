@@ -24,7 +24,8 @@ public class City implements IBusinessObject {
     private String zipCode;
     @Column(name="nom_ville",nullable = false, length = 100)
     private String cityName;
-    @OneToMany(mappedBy = "address.city")
+    @OneToMany
+    @JoinColumn(name = "fk_vill")
     private Set<Restaurant> restaurants;
 
     public City() {
@@ -39,7 +40,7 @@ public class City implements IBusinessObject {
         this.id = id;
         this.zipCode = zipCode;
         this.cityName = cityName;
-        this.restaurants = new HashSet();
+        this.restaurants = new HashSet<>();
     }
 
     public Integer getId() {
