@@ -5,6 +5,20 @@ import jakarta.persistence.*;
 /**
  * @author cedric.baudet
  */
+@NamedQueries({
+        @NamedQuery(
+                name = "EvaluationCriteria.findAll",
+                query = "SELECT ec FROM EvaluationCriteria ec"
+        ),
+        @NamedQuery(
+                name = "EvaluationCriteria.findById",
+                query = "SELECT ec FROM EvaluationCriteria ec WHERE ec.id = :id"
+        ),
+        @NamedQuery(
+                name = "EvaluationCriteria.findByName",
+                query = "SELECT ec FROM EvaluationCriteria ec WHERE upper(ec.name) = upper(:name)"
+        )
+})
 @Entity
 @Table(name = "CRITERES_EVALUATION")
 public class EvaluationCriteria implements IBusinessObject {

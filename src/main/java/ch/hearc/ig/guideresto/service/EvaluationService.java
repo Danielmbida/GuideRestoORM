@@ -1,6 +1,10 @@
 package ch.hearc.ig.guideresto.service;
 
 import ch.hearc.ig.guideresto.business.*;
+import ch.hearc.ig.guideresto.persistence.BasicEvaluationMapper;
+import ch.hearc.ig.guideresto.persistence.CompleteEvaluationMapper;
+import ch.hearc.ig.guideresto.persistence.EvaluationCriteriaMapper;
+import ch.hearc.ig.guideresto.persistence.GradeMapper;
 
 import java.util.Date;
 import java.util.Set;
@@ -8,29 +12,30 @@ import java.util.Set;
 /**
  * Service métier pour la gestion des évaluations (simples et complètes) des restaurants.
  * <p>
- * Singleton qui orchestre les opérations via JPA/Hibernate avec EntityManager.
- * Hérite d'{@link AbstractService} pour l'EntityManager et la connexion JDBC.
+ * Singleton qui orchestre les opérations via les mappers JPA.
  */
 public class EvaluationService extends AbstractService {
     // Instance unique (pattern Singleton)
     private static EvaluationService evaluationService = null;
 
-
+    private final EvaluationCriteriaMapper criteriaMapper;
+    private final BasicEvaluationMapper basicEvaluationMapper;
+    private final CompleteEvaluationMapper completeEvaluationMapper;
+    private final GradeMapper gradeMapper;
 
     /**
-     * Constructeur privé : initialisation de l'EntityManager via la classe parente.
+     * Constructeur privé : initialisation de l'EntityManager et des mappers.
      */
-    private EvaluationService()
-    {
+    private EvaluationService() {
         super();
-
+        this.criteriaMapper = new EvaluationCriteriaMapper(this.entityManager);
+        this.basicEvaluationMapper = new BasicEvaluationMapper(this.entityManager);
+        this.completeEvaluationMapper = new CompleteEvaluationMapper(this.entityManager);
+        this.gradeMapper = new GradeMapper(this.entityManager);
     }
 
     public Set<EvaluationCriteria> getAllEvaluationCriterias() {
-        return Set.copyOf(entityManager.createQuery(
-                "SELECT ec FROM EvaluationCriteria ec",
-                EvaluationCriteria.class)
-                .getResultList());
+        return criteriaMapper.findAll();
     }
 
     /**
@@ -38,10 +43,8 @@ public class EvaluationService extends AbstractService {
      *
      * @return instance unique de {@link EvaluationService}
      */
-    public static EvaluationService getInstance()
-    {
-        if(evaluationService == null)
-        {
+    public static EvaluationService getInstance() {
+        if (evaluationService == null) {
             evaluationService = new EvaluationService();
         }
         return evaluationService;
@@ -54,12 +57,8 @@ public class EvaluationService extends AbstractService {
      * @return Le nombre total de likes pour ce restaurant.
      */
     public int getRestaurantAmountLikes(Restaurant restaurant) {
-        Long count = entityManager.createQuery(
-                "SELECT COUNT(be) FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId AND be.likeRestaurant = true",
-                Long.class)
-                .setParameter("restaurantId", restaurant.getId())
-                .getSingleResult();
-        return count.intValue();
+        if (restaurant == null || restaurant.getId() == null) return 0;
+        return basicEvaluationMapper.getLikesCountForRestaurant(restaurant.getId());
     }
 
     /**
@@ -69,12 +68,8 @@ public class EvaluationService extends AbstractService {
      * @return Le nombre total de dislikes pour ce restaurant.
      */
     public int getRestaurantAmountDislikes(Restaurant restaurant) {
-        Long count = entityManager.createQuery(
-                "SELECT COUNT(be) FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId AND be.likeRestaurant = false",
-                Long.class)
-                .setParameter("restaurantId", restaurant.getId())
-                .getSingleResult();
-        return count.intValue();
+        if (restaurant == null || restaurant.getId() == null) return 0;
+        return basicEvaluationMapper.getDislikesCountForRestaurant(restaurant.getId());
     }
 
     /**
@@ -84,11 +79,8 @@ public class EvaluationService extends AbstractService {
      * @return Un ensemble d'objets {@link CompleteEvaluation}.
      */
     public Set<CompleteEvaluation> getCompleteEvaluationsOfARestaurant(Restaurant restaurant){
-        return Set.copyOf(entityManager.createQuery(
-                "SELECT ce FROM CompleteEvaluation ce WHERE ce.restaurant.id = :restaurantId",
-                CompleteEvaluation.class)
-                .setParameter("restaurantId", restaurant.getId())
-                .getResultList());
+        if (restaurant == null || restaurant.getId() == null) return Set.of();
+        return completeEvaluationMapper.findByRestaurantId(restaurant.getId());
     }
 
     /**
@@ -98,11 +90,8 @@ public class EvaluationService extends AbstractService {
      * @return Un ensemble d'objets {@link BasicEvaluation}.
      */
     public Set<BasicEvaluation> getBasicEvaluationsOfARestaurant(Restaurant restaurant){
-        return Set.copyOf(entityManager.createQuery(
-                "SELECT be FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId",
-                BasicEvaluation.class)
-                .setParameter("restaurantId", restaurant.getId())
-                .getResultList());
+        if (restaurant == null || restaurant.getId() == null) return Set.of();
+        return basicEvaluationMapper.findByRestaurantId(restaurant.getId());
     }
 
     /**
@@ -115,12 +104,11 @@ public class EvaluationService extends AbstractService {
         BasicEvaluation basicEvaluation = new BasicEvaluation();
         basicEvaluation.setRestaurant(restaurant);
         basicEvaluation.setLikeRestaurant(true);
-        // Date de visite = maintenant (java.util.Date)
         basicEvaluation.setVisitDate(new Date());
         basicEvaluation.setIpAddress(ipAddress);
-        // Persistance
+
         entityManager.getTransaction().begin();
-        entityManager.persist(basicEvaluation);
+        basicEvaluationMapper.create(basicEvaluation);
         entityManager.getTransaction().commit();
     }
 
@@ -134,12 +122,11 @@ public class EvaluationService extends AbstractService {
         BasicEvaluation basicEvaluation = new BasicEvaluation();
         basicEvaluation.setRestaurant(restaurant);
         basicEvaluation.setLikeRestaurant(false);
-        // Date de visite = maintenant (java.util.Date)
         basicEvaluation.setVisitDate(new Date());
         basicEvaluation.setIpAddress(ipAddress);
-        // Persistance
+
         entityManager.getTransaction().begin();
-        entityManager.persist(basicEvaluation);
+        basicEvaluationMapper.create(basicEvaluation);
         entityManager.getTransaction().commit();
     }
 
@@ -154,20 +141,18 @@ public class EvaluationService extends AbstractService {
     public void addEvaluation(Restaurant restaurant, String comment, String username, Set<Grade> grades){
         CompleteEvaluation completeEvaluation = new CompleteEvaluation();
         completeEvaluation.setRestaurant(restaurant);
-        // Date de visite = maintenant (java.util.Date)
         completeEvaluation.setVisitDate(new Date());
         completeEvaluation.setComment(comment);
         completeEvaluation.setUsername(username);
         completeEvaluation.setGrades(grades);
 
-        System.out.println(completeEvaluation.getId());
-
-        // Persistance
         entityManager.getTransaction().begin();
-        entityManager.persist(completeEvaluation);
-        for (Grade grade : completeEvaluation.getGrades()) {
+        // persist evaluation
+        completeEvaluationMapper.create(completeEvaluation);
+        // persist grades and link them to the managed evaluation
+        for (Grade grade : grades) {
             grade.setEvaluation(completeEvaluation);
-            entityManager.persist(grade);
+            gradeMapper.create(grade);
         }
         entityManager.getTransaction().commit();
     }

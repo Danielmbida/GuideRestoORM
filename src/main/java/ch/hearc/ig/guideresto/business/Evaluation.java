@@ -7,6 +7,14 @@ import java.util.Date;
 /**
  * @author cedric.baudet
  */
+@NamedQuery(
+        name = "Evaluation.findById",
+        query = "SELECT b FROM Evaluation b WHERE b.id = :id"
+)
+@NamedQuery(
+        name = "Evaluation.findAll",
+        query = "SELECT b FROM Evaluation b"
+)
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Evaluation implements IBusinessObject {

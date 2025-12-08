@@ -8,6 +8,22 @@ import java.util.Set;
 /**
  * @author cedric.baudet
  */
+@NamedQuery(
+        name = "City.findAll",
+        query = "SELECT c FROM City c"
+)
+@NamedQuery(
+        name = "City.findById",
+        query = "SELECT c FROM City c WHERE c.id = :id"
+)
+@NamedQuery(
+        name = "City.findByName",
+        query = "SELECT c FROM City c WHERE upper(c.cityName) = upper(:cityName)"
+)
+@NamedQuery(
+        name = "City.findByZipCode",
+        query = "SELECT c FROM City c WHERE c.zipCode= :zipCode"
+)
 @Entity
 @Table(name = "VILLES")
 public class City implements IBusinessObject {

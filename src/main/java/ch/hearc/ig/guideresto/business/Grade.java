@@ -5,6 +5,14 @@ import jakarta.persistence.*;
 /**
  * @author cedric.baudet
  */
+@NamedQuery(
+        name = "Grade.findAll",
+        query = "SELECT gr FROM Grade gr"
+)
+@NamedQuery(
+        name = "Grade.findById",
+        query = "SELECT gr FROM Grade gr WHERE gr.id = :id"
+)
 @Entity
 @Table(name = "NOTES")
 public class Grade implements IBusinessObject {

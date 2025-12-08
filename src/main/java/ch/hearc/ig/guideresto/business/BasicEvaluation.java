@@ -1,19 +1,31 @@
 package ch.hearc.ig.guideresto.business;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.util.Date;
 
 /**
  * @author cedric.baudet
  */
+/**
+ * Recherche par id : NamedQuery ajoutée.
+ */
+
+
+@NamedQuery(
+        name = "BasicEvaluation.getRestaurantAmountDislikes",
+        query = "SELECT COUNT(be) FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId AND be.likeRestaurant = false"
+)
+@NamedQuery(
+        name = "BasicEvaluation.getRestaurantAmountLikes",
+        query = "SELECT COUNT(be) FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId AND be.likeRestaurant = true"
+)
 @Entity
 @Table(name = "LIKES")
 public class BasicEvaluation extends Evaluation {
 
     @Column(name = "appreciation", nullable = false, length = 1)
+    @Convert(converter = BooleanToCharConverter.class)
     private Boolean likeRestaurant;
     @Column(name = "adresse_ip", length = 100, nullable = false)
     private String ipAddress;

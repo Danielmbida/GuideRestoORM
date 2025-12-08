@@ -9,6 +9,31 @@ import java.util.Set;
 /**
  * @author cedric.baudet
  */
+@NamedQuery(
+        name = "Restaurant.findAll",
+        query = "SELECT r FROM Restaurant r"
+)
+@NamedQuery(
+        name = "Restaurant.findById",
+        query = "SELECT r FROM Restaurant r WHERE r.id = :id"
+)
+@NamedQuery(
+        name = "Restaurant.getRestaurantsByName",
+        query = "SELECT r FROM Restaurant r WHERE upper(r.name) = upper(:name)"
+)
+@NamedQuery(
+        name="Restaurant.getRestaurantByNameLike",
+        query="SELECT r FROM Restaurant r WHERE upper(r.name) LIKE upper(:namePattern)"
+)
+@NamedQuery(
+        name = "Restaurant.getRestaurantByCityNameLike",
+        query = "SELECT r FROM Restaurant r \n" +
+                "WHERE UPPER(r.address.city.cityName) LIKE UPPER(CONCAT(CONCAT('%', :cityName), '%'))\n"
+)
+@NamedQuery(
+        name="Restaurant.getRestaurantsByTypeLabel",
+        query = "SELECT r FROM Restaurant r WHERE upper(r.type.label) = upper(:typeLabel)"
+)
 @Entity
 @Table(name = "RESTAURANTS")
 public class Restaurant implements IBusinessObject {

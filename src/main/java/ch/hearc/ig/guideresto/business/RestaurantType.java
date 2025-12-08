@@ -8,6 +8,18 @@ import java.util.Set;
 /**
  * @author cedric.baudet
  */
+@NamedQuery(
+        name = "RestaurantType.findAll",
+        query = "SELECT rt FROM RestaurantType rt"
+)
+@NamedQuery(
+        name = "RestaurantType.findById",
+        query = "SELECT rt FROM RestaurantType rt WHERE rt.id = :id"
+)
+@NamedQuery(
+        name = "RestaurantType.findByLabel",
+        query = "SELECT rt FROM RestaurantType rt WHERE upper(rt.label) = upper(:label)"
+)
 @Entity
 @Table(name = "TYPES_GASTRONOMIQUES")
 public class RestaurantType implements IBusinessObject {

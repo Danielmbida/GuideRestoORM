@@ -25,39 +25,17 @@ public class Application {
 
     public static void main(String[] args) {
 
-        EntityManager re = JpaUtils.getEntityManager();
-        EntityTransaction transaction = re.getTransaction();
-        transaction.begin();
+        scanner = new Scanner(System.in);
+        restaurantService = RestaurantService.getInstance();
+        evaluationService = EvaluationService.getInstance();
 
-        Restaurant res = re.find(Restaurant.class, 1);
-
-//        re.persist(res);
-//        re.flush();
-        System.out.println(res.getType().getLabel());
-        transaction.commit();
-        re.close();
-
-//        scanner = new Scanner(System.in);
-//        restaurantService = RestaurantService.getInstance();
-//        evaluationService = EvaluationService.getInstance();
-//
-//        // --- Shutdown hook pour fermer proprement les connexions JDBC via les services ---
-//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//            try {
-//                if (restaurantService != null) restaurantService.close();
-//                if (evaluationService != null) evaluationService.close();
-//            } catch (Exception e) {
-//                logger.warn("Erreur à la fermeture des services: " + e.getMessage());
-//            }
-//        }));
-//
-//        System.out.println("Bienvenue dans GuideResto ! Que souhaitez-vous faire ?");
-//        int choice;
-//        do {
-//            printMainMenu();
-//            choice = readInt();
-//            proceedMainMenu(choice);
-//        } while (choice != 0);
+        System.out.println("Bienvenue dans GuideResto ! Que souhaitez-vous faire ?");
+        int choice;
+        do {
+            printMainMenu();
+            choice = readInt();
+            proceedMainMenu(choice);
+        } while (choice != 0);
 
     }
 
@@ -293,7 +271,7 @@ public class Application {
         sb.append("\nEvaluations reçues : ").append("\n");
 
         String text;
-        for (Evaluation currentEval : restaurant.getEvaluations()) {
+        for (Evaluation currentEval : evaluationService.getCompleteEvaluationsOfARestaurant(restaurant)) {
             text = getCompleteEvaluationDescription(currentEval);
             if (text != null) { // On va recevoir des null pour les BasicEvaluation donc on ne les traite pas !
                 sb.append(text).append("\n");
@@ -332,6 +310,7 @@ public class Application {
      */
     private static String getCompleteEvaluationDescription(Evaluation eval) {
         StringBuilder result = new StringBuilder();
+
 
         if (eval instanceof CompleteEvaluation) {
             CompleteEvaluation ce = (CompleteEvaluation) eval;

@@ -10,6 +10,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+@NamedQuery(
+        name = "CompleteEvaluation.getCompleteEvaluationsOfARestaurant",
+        query = "SELECT ce FROM CompleteEvaluation ce WHERE ce.restaurant.id = :restaurantId"
+)
 @Entity
 @Table(name = "COMMENTAIRES")
 public class CompleteEvaluation extends Evaluation {

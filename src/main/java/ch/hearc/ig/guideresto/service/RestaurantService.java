@@ -4,25 +4,22 @@ import ch.hearc.ig.guideresto.business.City;
 import ch.hearc.ig.guideresto.business.Localisation;
 import ch.hearc.ig.guideresto.business.Restaurant;
 import ch.hearc.ig.guideresto.business.RestaurantType;
+import ch.hearc.ig.guideresto.persistence.CityMapper;
+import ch.hearc.ig.guideresto.persistence.RestaurantMapper;
+import ch.hearc.ig.guideresto.persistence.RestaurantTypeMapper;
 
 import java.util.Set;
 
 /**
  * Service métier principal pour la gestion des restaurants.
- * <p>
- * Cette classe agit comme une couche intermédiaire entre JPA/Hibernate
- * et la logique applicative. Elle fournit des méthodes permettant de
- * manipuler les entités {@link Restaurant}, {@link City} et {@link RestaurantType}.
- * </p>
- * <p>
- * Le service suit le pattern Singleton afin de garantir une instance unique et
- * réutilisable dans toute l'application.
- * </p>
  */
 public class RestaurantService extends AbstractService {
 
     // Instance unique du service (Singleton)
     private static RestaurantService restaurantService = null;
+    private final RestaurantMapper restaurantMapper;
+    private final CityMapper cityMapper;
+    private final RestaurantTypeMapper restaurantTypeMapper;
 
     /**
      * Constructeur privé (pattern Singleton).
@@ -30,6 +27,9 @@ public class RestaurantService extends AbstractService {
      */
     private RestaurantService() {
         super();
+        this.restaurantMapper = new RestaurantMapper(this.entityManager);
+        this.cityMapper = new CityMapper(this.entityManager);
+        this.restaurantTypeMapper = new RestaurantTypeMapper(this.entityManager);
     }
 
     /**
@@ -54,10 +54,7 @@ public class RestaurantService extends AbstractService {
      * @return Un ensemble d'objets {@link Restaurant}.
      */
     public Set<Restaurant> getRestaurants() {
-        return Set.copyOf(entityManager.createQuery(
-                "SELECT r FROM Restaurant r",
-                Restaurant.class)
-                .getResultList());
+        return restaurantMapper.findAll();
     }
 
     /**
@@ -67,15 +64,7 @@ public class RestaurantService extends AbstractService {
      * @return L'objet {@link Restaurant} correspondant, ou {@code null} s'il n'existe pas.
      */
     public Restaurant getRestaurantByName(String name) {
-        try {
-            return entityManager.createQuery(
-                    "SELECT r FROM Restaurant r WHERE r.name = :name",
-                    Restaurant.class)
-                    .setParameter("name", name)
-                    .getSingleResult();
-        } catch (Exception e) {
-            return null;
-        }
+        return restaurantMapper.findByName(name);
     }
 
     /**
@@ -86,11 +75,7 @@ public class RestaurantService extends AbstractService {
      * @return Un ensemble de {@link Restaurant} dont le nom correspond partiellement.
      */
     public Set<Restaurant> getRestaurantByNameLike(String name) {
-        return Set.copyOf(entityManager.createQuery(
-                "SELECT r FROM Restaurant r WHERE r.name LIKE :name",
-                Restaurant.class)
-                .setParameter("name", "%" + name + "%")
-                .getResultList());
+        return restaurantMapper.findByNameLike(name);
     }
 
     /**
@@ -99,10 +84,7 @@ public class RestaurantService extends AbstractService {
      * @return Un ensemble d'objets {@link City}.
      */
     public Set<City> getVillesRestaurants() {
-        return Set.copyOf(entityManager.createQuery(
-                "SELECT c FROM City c",
-                City.class)
-                .getResultList());
+        return cityMapper.findAll();
     }
 
     /**
@@ -112,11 +94,7 @@ public class RestaurantService extends AbstractService {
      * @return Un ensemble d'objets {@link Restaurant} situés dans la ville spécifiée.
      */
     public Set<Restaurant> getRestaurantsByCityName(String cityName) {
-        return Set.copyOf(entityManager.createQuery(
-                "SELECT r FROM Restaurant r WHERE r.address.city.cityName = :cityName",
-                Restaurant.class)
-                .setParameter("cityName", cityName)
-                .getResultList());
+        return restaurantMapper.findByCityNameLike(cityName);
     }
 
     // ---------------------------------------------------------------
@@ -136,23 +114,18 @@ public class RestaurantService extends AbstractService {
      */
     public Restaurant addRestaurant(String name, String description, String website,
                                     String street, City city, RestaurantType restaurantType) {
-        // Création d'un nouvel objet Restaurant et initialisation de ses attributs
         Restaurant restaurant = new Restaurant();
         restaurant.setName(name);
         restaurant.setDescription(description);
         restaurant.setWebsite(website);
-
-        // Construction de l'objet Localisation lié à la ville
         Localisation localisation = new Localisation();
         localisation.setStreet(street);
         localisation.setCity(city);
-
         restaurant.setAddress(localisation);
         restaurant.setType(restaurantType);
 
-        // Persistance dans la base via l'EntityManager
         entityManager.getTransaction().begin();
-        entityManager.persist(restaurant);
+        restaurantMapper.create(restaurant);
         entityManager.getTransaction().commit();
 
         return restaurant;
@@ -165,10 +138,7 @@ public class RestaurantService extends AbstractService {
      */
     public void deleteRestaurant(Restaurant restaurant) {
         entityManager.getTransaction().begin();
-        Restaurant managedRestaurant = entityManager.find(Restaurant.class, restaurant.getId());
-        if (managedRestaurant != null) {
-            entityManager.remove(managedRestaurant);
-        }
+        restaurantMapper.delete(restaurant);
         entityManager.getTransaction().commit();
     }
 
@@ -179,7 +149,7 @@ public class RestaurantService extends AbstractService {
      */
     public void editRestaurant(Restaurant restaurant) {
         entityManager.getTransaction().begin();
-        entityManager.merge(restaurant);
+        restaurantMapper.update(restaurant);
         entityManager.getTransaction().commit();
     }
 
@@ -192,15 +162,7 @@ public class RestaurantService extends AbstractService {
      * @return La {@link City} correspondant au code postal, ou {@code null} si introuvable.
      */
     public City getCitiByZipCode(String zipCode) {
-        try {
-            return entityManager.createQuery(
-                    "SELECT c FROM City c WHERE c.zipCode = :zipCode",
-                    City.class)
-                    .setParameter("zipCode", zipCode)
-                    .getSingleResult();
-        } catch (Exception e) {
-            return null;
-        }
+        return cityMapper.findByZipCode(zipCode);
     }
 
     /**
@@ -211,7 +173,7 @@ public class RestaurantService extends AbstractService {
      */
     public City createCity(City city) {
         entityManager.getTransaction().begin();
-        entityManager.persist(city);
+        cityMapper.create(city);
         entityManager.getTransaction().commit();
         return city;
     }
@@ -223,15 +185,7 @@ public class RestaurantService extends AbstractService {
      * @return Le {@link RestaurantType} correspondant, ou {@code null} si introuvable.
      */
     public RestaurantType getTypeByLabel(String label) {
-        try {
-            return entityManager.createQuery(
-                    "SELECT rt FROM RestaurantType rt WHERE rt.label = :label",
-                    RestaurantType.class)
-                    .setParameter("label", label)
-                    .getSingleResult();
-        } catch (Exception e) {
-            return null;
-        }
+        return restaurantTypeMapper.findByLabel(label);
     }
 
     /**
@@ -240,10 +194,7 @@ public class RestaurantService extends AbstractService {
      * @return Un ensemble de {@link RestaurantType}.
      */
     public Set<RestaurantType> getAllRestaurantTypes() {
-        return Set.copyOf(entityManager.createQuery(
-                "SELECT rt FROM RestaurantType rt",
-                RestaurantType.class)
-                .getResultList());
+        return restaurantTypeMapper.findAll();
     }
 
     // ---------------------------------------------------------------
@@ -260,4 +211,3 @@ public class RestaurantService extends AbstractService {
         super.close();
     }
 }
-
