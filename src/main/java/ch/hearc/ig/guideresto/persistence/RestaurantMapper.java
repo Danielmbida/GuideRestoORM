@@ -3,13 +3,14 @@ package ch.hearc.ig.guideresto.persistence;
 import ch.hearc.ig.guideresto.business.Restaurant;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.TypedQuery;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class RestaurantMapper {
+public class RestaurantMapper extends AbstractMapper<Restaurant> {
     private final EntityManager entityManager;
 
     public RestaurantMapper(EntityManager entityManager) {
@@ -77,6 +78,7 @@ public class RestaurantMapper {
      *
      * @return Un Set contenant tous les objets Restaurant.
      */
+    @Override
     public Set<Restaurant> findAll() {
         TypedQuery<Restaurant> query = entityManager.createNamedQuery("Restaurant.findAll", Restaurant.class);
         return new HashSet<>(query.getResultList());
@@ -101,6 +103,7 @@ public class RestaurantMapper {
      * @param restaurant L'objet Restaurant à insérer.
      * @return Le Restaurant nouvellement créé (avec son ID généré).
      */
+    @Override
     public Restaurant create(Restaurant restaurant) {
         entityManager.persist(restaurant);
         return restaurant;
@@ -110,9 +113,17 @@ public class RestaurantMapper {
      * Met à jour les informations d'un restaurant existant dans la base de données.
      * @param restaurant L'objet Restaurant contenant les nouvelles informations.
      * @return Le restaurant mis à jour.
+     * @throws OptimisticLockException Si le restaurant a été modifié par un autre utilisateur
      */
+    @Override
     public Restaurant update(Restaurant restaurant) {
-        return entityManager.merge(restaurant);
+        try {
+            return entityManager.merge(restaurant);
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la mise à jour du restaurant ID={}: {}",
+                restaurant.getId(), e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -121,15 +132,23 @@ public class RestaurantMapper {
        *
      * @param restaurant L'objet Restaurant à supprimer.
      * @return true si la suppression a réussi, false sinon.
+     * @throws OptimisticLockException Si le restaurant a été modifié par un autre utilisateur
      */
+    @Override
     public boolean delete(Restaurant restaurant) {
-        // Si l'entité n'est pas managée, il faut la récupérer d'abord
-        Restaurant managedRestaurant = entityManager.find(Restaurant.class, restaurant.getId());
-        if (managedRestaurant != null) {
-            entityManager.remove(managedRestaurant);
-            return true;
+        try {
+            // Si l'entité n'est pas managée, il faut la récupérer d'abord
+            Restaurant managedRestaurant = entityManager.find(Restaurant.class, restaurant.getId());
+            if (managedRestaurant != null) {
+                entityManager.remove(managedRestaurant);
+                return true;
+            }
+            return false;
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la suppression du restaurant ID={}: {}",
+                restaurant.getId(), e.getMessage());
+            throw e;
         }
-        return false;
     }
 
 }

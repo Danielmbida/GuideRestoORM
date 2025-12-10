@@ -4,6 +4,7 @@ import ch.hearc.ig.guideresto.business.BasicEvaluation;
 import ch.hearc.ig.guideresto.business.Evaluation;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.TypedQuery;
 
 import java.util.HashSet;
@@ -14,7 +15,7 @@ import java.util.Set;
  * Mapper JPA pour BasicEvaluation. N'assure pas la gestion des transactions.
  * Utilise les NamedQueries présentes dans Evaluation et BasicEvaluation.
  */
-public class BasicEvaluationMapper {
+public class BasicEvaluationMapper extends AbstractMapper<BasicEvaluation> {
 
     private final EntityManager em;
 
@@ -36,6 +37,7 @@ public class BasicEvaluationMapper {
         }
     }
 
+    @Override
     public Set<BasicEvaluation> findAll() {
         TypedQuery<Evaluation> q = em.createNamedQuery("Evaluation.findAll", Evaluation.class);
         List<Evaluation> results = q.getResultList();
@@ -77,21 +79,42 @@ public class BasicEvaluationMapper {
         }
     }
 
+    @Override
     public BasicEvaluation create(BasicEvaluation evaluation) {
         em.persist(evaluation);
         return evaluation;
     }
 
+    /**
+     * @throws OptimisticLockException Si l'évaluation a été modifiée par un autre utilisateur
+     */
+    @Override
     public BasicEvaluation update(BasicEvaluation evaluation) {
-        return em.merge(evaluation);
+        try {
+            return em.merge(evaluation);
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la mise à jour de l'évaluation basique ID={}: {}",
+                evaluation.getId(), e.getMessage());
+            throw e;
+        }
     }
 
+    /**
+     * @throws OptimisticLockException Si l'évaluation a été modifiée par un autre utilisateur
+     */
+    @Override
     public boolean delete(BasicEvaluation evaluation) {
-        BasicEvaluation managed = em.find(BasicEvaluation.class, evaluation.getId());
-        if (managed != null) {
-            em.remove(managed);
-            return true;
+        try {
+            BasicEvaluation managed = em.find(BasicEvaluation.class, evaluation.getId());
+            if (managed != null) {
+                em.remove(managed);
+                return true;
+            }
+            return false;
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la suppression de l'évaluation basique ID={}: {}",
+                evaluation.getId(), e.getMessage());
+            throw e;
         }
-        return false;
     }
 }

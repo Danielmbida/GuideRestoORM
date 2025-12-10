@@ -3,6 +3,7 @@ package ch.hearc.ig.guideresto.persistence;
 import ch.hearc.ig.guideresto.business.Grade;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.TypedQuery;
 
 import java.util.HashSet;
@@ -12,14 +13,13 @@ import java.util.Set;
 /**
  * Mapper JPA pour `Grade` (table NOTES).
  */
-public class GradeMapper {
-
+public class GradeMapper extends AbstractMapper<Grade> {
     private final EntityManager em;
-
     public GradeMapper(EntityManager em) {
-        this.em = em;
+       this.em = em;
     }
 
+    @Override
     public Grade findById(int id) {
         try {
             TypedQuery<Grade> q = em.createNamedQuery("Grade.findById", Grade.class);
@@ -30,6 +30,7 @@ public class GradeMapper {
         }
     }
 
+    @Override
     public Set<Grade> findAll() {
         TypedQuery<Grade> q = em.createNamedQuery("Grade.findAll", Grade.class);
         List<Grade> list = q.getResultList();
@@ -43,22 +44,44 @@ public class GradeMapper {
         return new HashSet<>(list);
     }
 
+    @Override
     public Grade create(Grade grade) {
         em.persist(grade);
         return grade;
     }
 
+    /**
+     * @throws OptimisticLockException Si la note a été modifiée par un autre utilisateur
+     */
+    @Override
     public Grade update(Grade grade) {
-        return em.merge(grade);
+        try {
+            return em.merge(grade);
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la mise à jour de la note ID={}: {}",
+                grade.getId(), e.getMessage());
+            throw e;
+        }
     }
 
+    /**
+     * @throws OptimisticLockException Si la note a été modifiée par un autre utilisateur
+     */
+    @Override
     public boolean delete(Grade grade) {
-        Grade managed = em.find(Grade.class, grade.getId());
-        if (managed != null) {
-            em.remove(managed);
-            return true;
+        try {
+            Grade managed = em.find(Grade.class, grade.getId());
+            if (managed != null) {
+                em.remove(managed);
+                return true;
+            }
+            return false;
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la suppression de la note ID={}: {}",
+                grade.getId(), e.getMessage());
+            throw e;
         }
-        return false;
     }
 
 }
+

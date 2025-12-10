@@ -3,13 +3,14 @@ package ch.hearc.ig.guideresto.persistence;
 import ch.hearc.ig.guideresto.business.RestaurantType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.TypedQuery;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class RestaurantTypeMapper {
+public class RestaurantTypeMapper extends AbstractMapper<RestaurantType> {
 
     private final EntityManager em;
 
@@ -82,10 +83,17 @@ public class RestaurantTypeMapper {
      * Met à jour un type gastronomique existant dans la base de données.
      *
      * @param object L'objet RestaurantType contenant les nouvelles informations.
-     * @return true si la mise à jour a réussi, false sinon.
+     * @return Le type gastronomique mis à jour.
+     * @throws OptimisticLockException Si le type a été modifié par un autre utilisateur
      */
     public RestaurantType update(RestaurantType object) {
-        return em.merge(object);
+        try {
+            return em.merge(object);
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la mise à jour du type gastronomique ID={}: {}",
+                object.getId(), e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -93,22 +101,39 @@ public class RestaurantTypeMapper {
      *
      * @param object L'objet RestaurantType à supprimer.
      * @return true si la suppression a réussi, false sinon.
+     * @throws OptimisticLockException Si le type a été modifié par un autre utilisateur
      */
+    @Override
     public boolean delete(RestaurantType object) {
-        RestaurantType managed = em.find(RestaurantType.class, object.getId());
-        if (managed != null) {
-            em.remove(managed);
-            return true;
+        try {
+            RestaurantType managed = em.find(RestaurantType.class, object.getId());
+            if (managed != null) {
+                em.remove(managed);
+                return true;
+            }
+            return false;
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la suppression du type gastronomique ID={}: {}",
+                object.getId(), e.getMessage());
+            throw e;
         }
-        return false;
     }
 
+    /**
+     * @throws OptimisticLockException Si le type a été modifié par un autre utilisateur
+     */
     public boolean deleteById(int id) {
-        RestaurantType managed = em.find(RestaurantType.class, id);
-        if (managed != null) {
-            em.remove(managed);
-            return true;
+        try {
+            RestaurantType managed = em.find(RestaurantType.class, id);
+            if (managed != null) {
+                em.remove(managed);
+                return true;
+            }
+            return false;
+        } catch (OptimisticLockException e) {
+            logger.error("Conflit de version détecté lors de la suppression du type gastronomique ID={}: {}",
+                id, e.getMessage());
+            throw e;
         }
-        return false;
     }
 }
