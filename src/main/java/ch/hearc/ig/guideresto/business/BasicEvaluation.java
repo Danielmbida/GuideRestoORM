@@ -30,6 +30,9 @@ public class BasicEvaluation extends Evaluation {
     @Column(name = "adresse_ip", length = 100, nullable = false)
     private String ipAddress;
 
+    @Version
+    private int version;
+
     public BasicEvaluation() {
         this(null, null, null, null);
     }

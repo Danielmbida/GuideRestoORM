@@ -26,6 +26,9 @@ public class CompleteEvaluation extends Evaluation {
     @OneToMany(mappedBy = "evaluation")
     private Set<Grade> grades;
 
+    @Version
+    private int version;
+
     public CompleteEvaluation() {
         this(null, null, null, null);
     }

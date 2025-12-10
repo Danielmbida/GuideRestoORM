@@ -62,6 +62,9 @@ public class Restaurant implements IBusinessObject {
     @JoinColumn(name="fk_type")
     private RestaurantType type;
 
+    @Version
+    private int version;
+
     public Restaurant() {
         this(null, null, null, null, null, null, null);
     }

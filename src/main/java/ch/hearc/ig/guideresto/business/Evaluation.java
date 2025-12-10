@@ -35,6 +35,9 @@ public abstract class Evaluation implements IBusinessObject {
     @JoinColumn(name="fk_rest", nullable=false)
     private Restaurant restaurant;
 
+    @Version
+    private int version;
+
     public Evaluation() {
         this(null, null, null);
     }

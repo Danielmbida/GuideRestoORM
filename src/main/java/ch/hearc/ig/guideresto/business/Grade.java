@@ -34,6 +34,9 @@ public class Grade implements IBusinessObject {
     @JoinColumn(name="fk_crit", nullable=false)
     private EvaluationCriteria criteria;
 
+    @Version
+    private int version;
+
     public Grade() {
         this(null, null, null);
     }

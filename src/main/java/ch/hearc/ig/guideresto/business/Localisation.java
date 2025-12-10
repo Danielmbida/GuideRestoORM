@@ -14,6 +14,9 @@ public class Localisation {
     @JoinColumn(name = "fk_vill")
     private City city;
 
+    @Version
+    private int version;
+
     public Localisation() {
         this(null, null);
     }
@@ -22,6 +25,8 @@ public class Localisation {
         this.street = street;
         this.city = city;
     }
+
+
 
     public String getStreet() {
         return street;

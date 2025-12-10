@@ -44,6 +44,9 @@ public class City implements IBusinessObject {
     @JoinColumn(name = "fk_vill")
     private Set<Restaurant> restaurants;
 
+    @Version
+    private int version;
+
     public City() {
         this(null, null);
     }

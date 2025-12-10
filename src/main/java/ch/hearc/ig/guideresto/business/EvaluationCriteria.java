@@ -36,6 +36,9 @@ public class EvaluationCriteria implements IBusinessObject {
     @Column(name="description",length = 512)
     private String description;
 
+    @Version
+    private int version;
+
     public EvaluationCriteria() {
         this(null, null);
     }

@@ -38,6 +38,8 @@ public class RestaurantType implements IBusinessObject {
     private String description;
     @OneToMany(mappedBy = "type")
     private Set<Restaurant> restaurants;
+    @Version
+    private int version;
 
     public RestaurantType() {
         this(null, null);
