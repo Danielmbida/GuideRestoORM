@@ -5,13 +5,15 @@ import jakarta.persistence.*;
 /**
  * @author cedric.baudet
  */
+
+// NamedQuery : récupère toutes les notes (Grade)
+// Utilisation :
+//   - Nom : "Grade.findAll"
+//   - Paramètres : aucun
+//   - Retour : liste/ensemble d'entités Grade (SELECT gr FROM Grade gr)
 @NamedQuery(
         name = "Grade.findAll",
         query = "SELECT gr FROM Grade gr"
-)
-@NamedQuery(
-        name = "Grade.findById",
-        query = "SELECT gr FROM Grade gr WHERE gr.id = :id"
 )
 @Entity
 @Table(name = "NOTES")

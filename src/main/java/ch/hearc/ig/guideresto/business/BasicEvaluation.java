@@ -1,5 +1,6 @@
 package ch.hearc.ig.guideresto.business;
 
+import ch.hearc.ig.guideresto.persistence.jpa.BooleanConverter;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -7,15 +8,26 @@ import java.util.Date;
 /**
  * @author cedric.baudet
  */
-/**
- * Recherche par id : NamedQuery ajoutée.
+
+/*
+ * NamedQuery pour compter le nombre de BasicEvaluation indiquant un "dislike" pour un restaurant.
+ * Utilisation :
+ *   - Nom : "BasicEvaluation.getRestaurantAmountDislikes"
+ *   - Paramètre attendu : :restaurantId (Integer) -> identifiant métier du restaurant
+ *   - Retour : COUNT(be) de type Long représentant le nombre d'évaluations avec
  */
-
-
 @NamedQuery(
         name = "BasicEvaluation.getRestaurantAmountDislikes",
         query = "SELECT COUNT(be) FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId AND be.likeRestaurant = false"
 )
+
+/*
+  NamedQuery pour compter le nombre de BasicEvaluation indiquant un "like" pour un restaurant.
+  Utilisation :
+    - Nom : "BasicEvaluation.getRestaurantAmountLikes"
+    - Paramètre attendu : :restaurantId (Integer) -> identifiant métier du restaurant
+    - Retour : COUNT(be) de type Long représentant le nombre d'évaluations avec
+ */
 @NamedQuery(
         name = "BasicEvaluation.getRestaurantAmountLikes",
         query = "SELECT COUNT(be) FROM BasicEvaluation be WHERE be.restaurant.id = :restaurantId AND be.likeRestaurant = true"
@@ -25,7 +37,7 @@ import java.util.Date;
 public class BasicEvaluation extends Evaluation {
 
     @Column(name = "appreciation", nullable = false, length = 1)
-    @Convert(converter = BooleanToCharConverter.class)
+    @Convert(converter = BooleanConverter.class)
     private Boolean likeRestaurant;
     @Column(name = "adresse_ip", length = 100, nullable = false)
     private String ipAddress;

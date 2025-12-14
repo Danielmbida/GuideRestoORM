@@ -23,14 +23,9 @@ public class RestaurantMapper extends AbstractMapper<Restaurant> {
      * @param id Identifiant unique du restaurant à rechercher.
      * @return L'objet Restaurant correspondant, ou null s'il n'existe pas.
      */
+    @Override
     public Restaurant findById(int id) {
-        try {
-            TypedQuery<Restaurant> query = entityManager.createNamedQuery("Restaurant.findById", Restaurant.class);
-            query.setParameter("id", id);
-            return query.getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
+        return entityManager.find(Restaurant.class, id);
     }
 
     /**
@@ -41,7 +36,7 @@ public class RestaurantMapper extends AbstractMapper<Restaurant> {
      */
     public Restaurant findByName(String name) {
         try {
-            TypedQuery<Restaurant> query = entityManager.createNamedQuery("Restaurant.getRestaurantsByName", Restaurant.class);
+            TypedQuery<Restaurant> query = entityManager.createNamedQuery("Restaurant.getRestaurantByName", Restaurant.class);
             query.setParameter("name", name);
             return query.getSingleResult();
         } catch (NoResultException e) {
@@ -69,7 +64,7 @@ public class RestaurantMapper extends AbstractMapper<Restaurant> {
      */
     public Set<Restaurant> findByCityNameLike(String cityName) {
         TypedQuery<Restaurant> query = entityManager.createNamedQuery("Restaurant.getRestaurantByCityNameLike", Restaurant.class);
-        query.setParameter("cityName", cityName);
+        query.setParameter("cityName", "%" + cityName + "%");
         return new LinkedHashSet<>(query.getResultList());
     }
 
@@ -89,9 +84,9 @@ public class RestaurantMapper extends AbstractMapper<Restaurant> {
      * Recherche tous les restaurants appartenant à un type gastronomique donné (par ID de type).
      *
      * @param typeLabel Identifiant unique du type gastronomique.
-     * @return Un ensemble d'objets Restaurant correspondant au type spécifié.
+     * @return Un ensemble d'objets Restaurant correspndant au type spécifié.
      */
-    public Set<Restaurant> findByTypeLabel(int typeLabel) {
+    public Set<Restaurant> findByTypeLabel(String typeLabel) {
         TypedQuery<Restaurant> query = entityManager.createNamedQuery("Restaurant.getRestaur" +
                 "antsByTypeLabel", Restaurant.class);
         query.setParameter("typeLabel", typeLabel);

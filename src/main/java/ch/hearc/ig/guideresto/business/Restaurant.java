@@ -9,27 +9,29 @@ import java.util.Set;
 /**
  * @author cedric.baudet
  */
+
+// Récupère tous les restaurants
 @NamedQuery(
         name = "Restaurant.findAll",
         query = "SELECT r FROM Restaurant r"
 )
-@NamedQuery(
-        name = "Restaurant.findById",
-        query = "SELECT r FROM Restaurant r WHERE r.id = :id"
-)
-@NamedQuery(
-        name = "Restaurant.getRestaurantsByName",
-        query = "SELECT r FROM Restaurant r WHERE upper(r.name) = upper(:name)"
-)
+// Recherche par nom contenant (pattern, insensible à la casse)
 @NamedQuery(
         name="Restaurant.getRestaurantByNameLike",
         query="SELECT r FROM Restaurant r WHERE upper(r.name) LIKE upper(:namePattern)"
 )
+// Recherche par nom exact (insensible à la casse)
+@NamedQuery(
+        name="Restaurant.getRestaurantByName",
+        query="SELECT r FROM Restaurant r WHERE upper(r.name) = upper(:name)"
+)
+// Recherche par nom de ville (pattern, insensible à la casse)
 @NamedQuery(
         name = "Restaurant.getRestaurantByCityNameLike",
         query = "SELECT r FROM Restaurant r \n" +
                 "WHERE UPPER(r.address.city.cityName) LIKE UPPER(CONCAT(CONCAT('%', :cityName), '%'))\n"
 )
+// Recherche par label de type de restaurant (insensible à la casse)
 @NamedQuery(
         name="Restaurant.getRestaurantsByTypeLabel",
         query = "SELECT r FROM Restaurant r WHERE upper(r.type.label) = upper(:typeLabel)"
@@ -54,7 +56,8 @@ public class Restaurant implements IBusinessObject {
     private String description;
     @Column (name = "site_web",length = 100)
     private String website;
-    @OneToMany(mappedBy = "restaurant")
+    @OneToMany(mappedBy = "restaurant",  cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private Set<Evaluation> evaluations;
     @Embedded
     private Localisation address;

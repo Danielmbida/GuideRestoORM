@@ -1,10 +1,7 @@
 package ch.hearc.ig.guideresto.presentation;
 
 import ch.hearc.ig.guideresto.business.*;
-import ch.hearc.ig.guideresto.persistence.jpa.JpaUtils;
 import ch.hearc.ig.guideresto.service.*;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -202,17 +199,18 @@ public class Application {
     private static void searchRestaurantByType() {
         // Comme on ne peut pas faire de requête SQL avec la classe FakeItems, on trie les données manuellement.
         // Il est évident qu'une fois que vous utiliserez une base de données, il ne faut PAS garder ce système.
-        Set<Restaurant> fullList = restaurantService.getRestaurants();
+      //  Set<Restaurant> fullList = restaurantService.getRestaurants();
         Set<Restaurant> filteredList = new LinkedHashSet();
 
         RestaurantType chosenType = pickRestaurantType(restaurantService.getAllRestaurantTypes()) /* liste des types non disponible ici */;
 
-        if (chosenType != null) { // Si l'utilisateur a sélectionné un type, sinon on ne fait rien et la liste sera vide.
-            for (Restaurant currentRestaurant : fullList) {
-                if (currentRestaurant.getType().getLabel().equals(chosenType.getLabel())) {
-                    filteredList.add(currentRestaurant);
-                }
-            }
+        if (chosenType != null) {
+           filteredList =  restaurantService.getRestaurantByTypeLabel(chosenType.getLabel());// Si l'utilisateur a sélectionné un type, sinon on ne fait rien et la liste sera vide.
+//            for (Restaurant currentRestaurant : fullList) {
+//                if (currentRestaurant.getType().getLabel().equals(chosenType.getLabel())) {
+//                    filteredList.add(currentRestaurant);
+//                }
+//            }
         }
 
         Restaurant restaurant = pickRestaurant(filteredList);
@@ -271,12 +269,14 @@ public class Application {
         sb.append("\nEvaluations reçues : ").append("\n");
 
         String text;
-        for (Evaluation currentEval : evaluationService.getCompleteEvaluationsOfARestaurant(restaurant)) {
+       Set<CompleteEvaluation> evals =  evaluationService.getCompleteEvaluationsOfARestaurant(restaurant);
+        for (Evaluation currentEval : evals) {
             text = getCompleteEvaluationDescription(currentEval);
             if (text != null) { // On va recevoir des null pour les BasicEvaluation donc on ne les traite pas !
                 sb.append(text).append("\n");
             }
         }
+
 
         System.out.println(sb);
 
@@ -311,9 +311,7 @@ public class Application {
     private static String getCompleteEvaluationDescription(Evaluation eval) {
         StringBuilder result = new StringBuilder();
 
-
-        if (eval instanceof CompleteEvaluation) {
-            CompleteEvaluation ce = (CompleteEvaluation) eval;
+        if (eval instanceof CompleteEvaluation ce) {
             result.append("Evaluation de : ").append(ce.getUsername()).append("\n");
             result.append("Commentaire : ").append(ce.getComment()).append("\n");
             for (Grade currentGrade : ce.getGrades()) {
@@ -499,7 +497,7 @@ public class Application {
      * @return L'instance du restaurant ou null si pas trouvé
      */
     private static Restaurant searchRestaurantByName(String name) {
-        if(restaurantService.getRestaurantByName(name) != null) {
+        if(restaurantService.getRestaurantByNameLike(name) != null) {
             return restaurantService.getRestaurantByName(name);
         }
         return null;

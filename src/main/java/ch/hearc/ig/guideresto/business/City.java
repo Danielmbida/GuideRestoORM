@@ -8,18 +8,31 @@ import java.util.Set;
 /**
  * @author cedric.baudet
  */
+
+// NamedQuery : récupère toutes les villes
+// Utilisation :
+//   - Nom : "City.findAll"
+//   - Paramètres : aucun
+//   - Retour : liste/ensemble d'entités City (SELECT c FROM City c)
 @NamedQuery(
         name = "City.findAll",
         query = "SELECT c FROM City c"
 )
-@NamedQuery(
-        name = "City.findById",
-        query = "SELECT c FROM City c WHERE c.id = :id"
-)
+// NamedQuery : recherche une ville par nom (comparaison insensible à la casse)
+// Utilisation :
+//   - Nom : "City.findByName"
+//   - Paramètre attendu : :cityName (String) -> nom de la ville
+//   - Retour : entité City correspondante (le mapper utilise getSingleResult ; s'assurer
+//             qu'il n'y a pas de doublon pour ce nom)
 @NamedQuery(
         name = "City.findByName",
         query = "SELECT c FROM City c WHERE upper(c.cityName) = upper(:cityName)"
 )
+// NamedQuery : recherche une ville par code postal
+// Utilisation :
+//   - Nom : "City.findByZipCode"
+//   - Paramètre attendu : :zipCode (String) -> code postal
+//   - Retour : entité City correspondante
 @NamedQuery(
         name = "City.findByZipCode",
         query = "SELECT c FROM City c WHERE c.zipCode= :zipCode"

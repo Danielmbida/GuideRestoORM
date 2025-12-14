@@ -5,6 +5,8 @@ import jakarta.persistence.EntityManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.function.Consumer;
+
 /**
  * Classe de base abstraite pour tous les services métier.
  * <p>
@@ -19,9 +21,9 @@ public class AbstractService {
      * Constructeur : initialise l'EntityManager via JpaUtils.
      */
     public AbstractService() {
-        try{
+        try {
             entityManager = JpaUtils.getEntityManager();
-        }catch(Exception e){
+        } catch (Exception e) {
             logger.error("Erreur lors de la récupération de l'EntityManager : " + e.getMessage());
         }
     }
@@ -40,5 +42,15 @@ public class AbstractService {
             logger.warn("Erreur lors de la fermeture de l'EntityManager: " + e.getMessage());
         }
     }
-}
 
+    /**
+     * Exécute une action dans une transaction en déléguant à JpaUtils.inTransaction.
+     * Utile si on veut que la logique de transaction soit centralisée dans JpaUtils
+     * plutôt que dans le service.
+     *
+     * @param consumer action transactionnelle recevant un EntityManager
+     */
+    protected void inJpaUtilsTransaction(Consumer<EntityManager> consumer) {
+        JpaUtils.inTransaction(consumer);
+    }
+}

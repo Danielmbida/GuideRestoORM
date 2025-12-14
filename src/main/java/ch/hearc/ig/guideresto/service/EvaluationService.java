@@ -34,6 +34,11 @@ public class EvaluationService extends AbstractService {
         this.gradeMapper = new GradeMapper(this.entityManager);
     }
 
+    /**
+     * Retourne l'ensemble des critères d'évaluation disponibles.
+     *
+     * @return un Set contenant toutes les {@link EvaluationCriteria} présentes en base (vide si aucune)
+     */
     public Set<EvaluationCriteria> getAllEvaluationCriterias() {
         return criteriaMapper.findAll();
     }
@@ -107,9 +112,8 @@ public class EvaluationService extends AbstractService {
         basicEvaluation.setVisitDate(new Date());
         basicEvaluation.setIpAddress(ipAddress);
 
-        entityManager.getTransaction().begin();
-        basicEvaluationMapper.create(basicEvaluation);
-        entityManager.getTransaction().commit();
+        // Utilisation du helper transactionnel d'AbstractService qui délègue à JpaUtils
+        inJpaUtilsTransaction(em -> basicEvaluationMapper.create(basicEvaluation));
     }
 
     /**
@@ -125,9 +129,7 @@ public class EvaluationService extends AbstractService {
         basicEvaluation.setVisitDate(new Date());
         basicEvaluation.setIpAddress(ipAddress);
 
-        entityManager.getTransaction().begin();
-        basicEvaluationMapper.create(basicEvaluation);
-        entityManager.getTransaction().commit();
+        inJpaUtilsTransaction(em -> basicEvaluationMapper.create(basicEvaluation));
     }
 
     /**
@@ -144,16 +146,14 @@ public class EvaluationService extends AbstractService {
         completeEvaluation.setVisitDate(new Date());
         completeEvaluation.setComment(comment);
         completeEvaluation.setUsername(username);
-        completeEvaluation.setGrades(grades);
 
-        entityManager.getTransaction().begin();
-        // persist evaluation
-        completeEvaluationMapper.create(completeEvaluation);
-        // persist grades and link them to the managed evaluation
-        for (Grade grade : grades) {
-            grade.setEvaluation(completeEvaluation);
-            gradeMapper.create(grade);
-        }
-        entityManager.getTransaction().commit();
+        inJpaUtilsTransaction(em -> {
+            completeEvaluationMapper.create(completeEvaluation);
+            for (Grade grade : grades) {
+                grade.setEvaluation(completeEvaluation);
+                gradeMapper.create(grade);
+            }
+            completeEvaluation.setGrades(grades);
+        });
     }
 }

@@ -5,14 +5,22 @@ import jakarta.persistence.*;
 /**
  * @author cedric.baudet
  */
+
+// NamedQueries pour l'entité EvaluationCriteria
+// 1) EvaluationCriteria.findAll
+//    - Objectif : récupérer toutes les instances d'EvaluationCriteria
+//    - Paramètres : aucun
+//    - Retour : liste/ensemble d'entités EvaluationCriteria (SELECT ec FROM EvaluationCriteria ec)
+//
+// 2) EvaluationCriteria.findByName
+//    - Objectif : rechercher un critère d'évaluation par son nom (comparaison insensible à la casse)
+//    - Paramètres : :name (String) -> nom du critère recherché
+//    - Retour : l'entité EvaluationCriteria correspondante (le mapper appelle généralement getSingleResult,
+//              veillez à l'unicité du champ name ou à gérer les cas multiples)
 @NamedQueries({
         @NamedQuery(
                 name = "EvaluationCriteria.findAll",
                 query = "SELECT ec FROM EvaluationCriteria ec"
-        ),
-        @NamedQuery(
-                name = "EvaluationCriteria.findById",
-                query = "SELECT ec FROM EvaluationCriteria ec WHERE ec.id = :id"
         ),
         @NamedQuery(
                 name = "EvaluationCriteria.findByName",

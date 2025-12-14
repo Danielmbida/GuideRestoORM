@@ -8,14 +8,12 @@ import java.util.Set;
 /**
  * @author cedric.baudet
  */
+// NamedQuery : récupère tous les types de restaurant
 @NamedQuery(
         name = "RestaurantType.findAll",
         query = "SELECT rt FROM RestaurantType rt"
 )
-@NamedQuery(
-        name = "RestaurantType.findById",
-        query = "SELECT rt FROM RestaurantType rt WHERE rt.id = :id"
-)
+// NamedQuery : recherche un type par libellé (insensible à la casse)
 @NamedQuery(
         name = "RestaurantType.findByLabel",
         query = "SELECT rt FROM RestaurantType rt WHERE upper(rt.label) = upper(:label)"

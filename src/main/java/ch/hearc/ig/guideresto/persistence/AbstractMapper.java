@@ -1,13 +1,9 @@
 package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.IBusinessObject;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -19,8 +15,6 @@ public abstract class AbstractMapper<T extends IBusinessObject> {
 
     protected static final Logger logger = LogManager.getLogger();
 
-
-    protected Map<Integer, T> cache = new HashMap<>();
 
     /**
      * Recherche une entité par son identifiant.

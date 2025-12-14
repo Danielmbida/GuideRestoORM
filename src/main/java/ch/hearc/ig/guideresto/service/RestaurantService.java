@@ -26,8 +26,11 @@ public class RestaurantService extends AbstractService {
      * Initialise l'EntityManager via AbstractService.
      */
     private RestaurantService() {
+
+
         super();
         this.restaurantMapper = new RestaurantMapper(this.entityManager);
+
         this.cityMapper = new CityMapper(this.entityManager);
         this.restaurantTypeMapper = new RestaurantTypeMapper(this.entityManager);
     }
@@ -38,6 +41,7 @@ public class RestaurantService extends AbstractService {
      * @return Instance unique de {@link RestaurantService}.
      */
     public static RestaurantService getInstance() {
+
         if (restaurantService == null) {
             restaurantService = new RestaurantService();
         }
@@ -54,6 +58,9 @@ public class RestaurantService extends AbstractService {
      * @return Un ensemble d'objets {@link Restaurant}.
      */
     public Set<Restaurant> getRestaurants() {
+        if (this.entityManager == null || !this.entityManager.isOpen()) {
+            throw new IllegalStateException("EntityManager est null ou fermé");
+        }
         return restaurantMapper.findAll();
     }
 
@@ -76,6 +83,16 @@ public class RestaurantService extends AbstractService {
      */
     public Set<Restaurant> getRestaurantByNameLike(String name) {
         return restaurantMapper.findByNameLike(name);
+    }
+
+    /**
+     * Recherche des restaurants par type (libellé du type).
+     *
+     * @param name Libellé du type (ex. "Italien").
+     * @return Un ensemble de {@link Restaurant} du type spécifié (vide si aucun).
+     */
+    public Set<Restaurant> getRestaurantByTypeLabel(String name) {
+        return restaurantMapper.findByTypeLabel(name);
     }
 
     /**
@@ -124,9 +141,8 @@ public class RestaurantService extends AbstractService {
         restaurant.setAddress(localisation);
         restaurant.setType(restaurantType);
 
-        entityManager.getTransaction().begin();
-        restaurantMapper.create(restaurant);
-        entityManager.getTransaction().commit();
+        // Utilise la méthode transactionnelle d'AbstractService qui délègue à JpaUtils
+        inJpaUtilsTransaction(em -> restaurantMapper.create(restaurant));
 
         return restaurant;
     }
@@ -137,9 +153,8 @@ public class RestaurantService extends AbstractService {
      * @param restaurant Le restaurant à supprimer.
      */
     public void deleteRestaurant(Restaurant restaurant) {
-        entityManager.getTransaction().begin();
-        restaurantMapper.delete(restaurant);
-        entityManager.getTransaction().commit();
+        inJpaUtilsTransaction(em -> restaurantMapper.delete(restaurant));
+
     }
 
     /**
@@ -148,9 +163,7 @@ public class RestaurantService extends AbstractService {
      * @param restaurant Le restaurant contenant les nouvelles informations.
      */
     public void editRestaurant(Restaurant restaurant) {
-        entityManager.getTransaction().begin();
-        restaurantMapper.update(restaurant);
-        entityManager.getTransaction().commit();
+        inJpaUtilsTransaction(em -> restaurantMapper.update(restaurant));
     }
 
     /**
@@ -172,9 +185,7 @@ public class RestaurantService extends AbstractService {
      * @return La {@link City} persistée.
      */
     public City createCity(City city) {
-        entityManager.getTransaction().begin();
-        cityMapper.create(city);
-        entityManager.getTransaction().commit();
+        inJpaUtilsTransaction(em -> cityMapper.create(city));
         return city;
     }
 
