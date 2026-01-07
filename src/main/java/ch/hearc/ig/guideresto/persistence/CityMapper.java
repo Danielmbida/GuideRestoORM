@@ -17,6 +17,7 @@ public class CityMapper extends AbstractMapper<City> {
 
     private final EntityManager em;
 
+
     /**
      * Constructeur du mapper.
      *
